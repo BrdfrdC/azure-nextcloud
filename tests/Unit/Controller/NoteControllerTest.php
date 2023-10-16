@@ -52,6 +52,6 @@ class NoteControllerTest extends TestCase {
 
 		$result = $this->controller->update(3, 'title', 'content');
 
-		$this->assertEquals(Http::STATUS_NOT_FOUND, $result->getStatus());
+		$this->assertEquals(Https::STATUS_NOT_FOUND, $result->getStatus());
 	}
 }

@@ -33,7 +33,7 @@ The make command will install or update Composer dependencies if a composer.json
 
 ## Publish to App Store
 
-First get an account for the [App Store](http://apps.nextcloud.com/) then run:
+First get an account for the [App Store](https://apps.nextcloud.com/) then run:
 
     make && make appstore
 
@@ -46,7 +46,7 @@ You can use the provided Makefile to run all tests by using:
 
 This will run the PHP unit and integration tests and if a package.json is present in the **js/** folder will execute **npm run test**
 
-Of course you can also install [PHPUnit](http://phpunit.de/getting-started.html) and use the configurations directly:
+Of course you can also install [PHPUnit](https://phpunit.de/getting-started.html) and use the configurations directly:
 
     phpunit -c phpunit.xml
 

@@ -30,6 +30,8 @@ use OCA\Azure\AppInfo\Application;
 
 class PageController extends Controller {
 
+	private $response;
+
 	/**
 	 * @var IInitialState
 	 */
@@ -67,13 +69,20 @@ class PageController extends Controller {
 	public function mainPage(): TemplateResponse {
 
 		$appVersion = $this->config->getAppValue(Application::APP_ID, 'installed_version');
-		return new TemplateResponse(
+
+		$response = new TemplateResponse(
 			Application::APP_ID,
 			'myMainTemplate',
 			[
 				'app_version' => $appVersion,
 			]
 		);
+		
+		$csp = new ContentSecurityPolicy();
+        $csp->addAllowedFormActionDomain('https://*.microsoftonline.com'); 
+        $response->setContentSecurityPolicy($csp);
+		
+		return $response;
 	}
 
 	/**
@@ -102,6 +111,6 @@ class PageController extends Controller {
 		}
 		return new DataResponse([
 			'error_message' => 'Invalid config key',
-		], Http::STATUS_FORBIDDEN);
+		], Https::STATUS_FORBIDDEN);
 	}
 }
