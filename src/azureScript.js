@@ -2,12 +2,14 @@ var homeURL = window.location.href;
 var URLhash = window.location.hash
 
 document.addEventListener('DOMContentLoaded', () => {
-    if(!URLhash) {
+    if(!URLhash || !sessionStorage.getItem('MyToken')) {
         oauth2Signin();
+    } else if(URLhash == '#VM') {
+        sendVMRequest();
     } else {
         URLhash = URLhash.replace('#access_token=','').split('&')[0];
         sessionStorage.setItem('MyToken', URLhash);
-        sendRequest();
+        sendSubRequest();
     }
 })
 
@@ -37,7 +39,7 @@ function oauth2Signin() {
     form.submit();
 }
 
-let sendRequest = (ev) => {
+let sendSubRequest = (ev) => {
 
     let subscriptionURL = 'https://management.azure.com/subscriptions?api-version=2022-12-01';
     let token = sessionStorage.getItem('MyToken');
@@ -53,12 +55,12 @@ let sendRequest = (ev) => {
 
     function fetchSubscriptionID() {
         let subID;
-        console.log(request);
         fetch(request)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
                 subID = data.value[0].id;
+                sessionStorage.setItem('subID', subID);
             })
             .catch(error => {
                 console.error(error.message);
@@ -68,42 +70,63 @@ let sendRequest = (ev) => {
                 resolve(subID);
                 }, 2000);
         })
-    }
+    }    
+    fetchSubscriptionID();
+}
+
+var VMButton;
+
+if(sessionStorage.getItem('subID')) {
+    var navElement = document.getElementById('app-navigation-vue');
+
+    VMButton = document.createElement('button');
+    VMButton.setAttribute('class', 'app-navigation-button');
+
+    const entryText = document.createTextNode('Virtual Machines');
+    VMButton.appendChild(entryText);
+    navElement.appendChild(VMButton);
+}
+
+VMButton.addEventListener('click', () => {
+    window.location.hash = '#VM';
+    location.reload();
+});
+
+let sendVMRequest = (ev) => {
+    const subscriptionID = sessionStorage.getItem('subID');
+    let VMInfo;
+
+    let vmURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Compute/virtualMachines?api-version=2023-07-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let vmRequest = new Request(vmURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
 
     async function fetchVM() {
-        const subscriptionID = await fetchSubscriptionID();
-        sessionStorage.setItem('subID', subscriptionID);
-        let VMInfo;
-
-        let vmURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Compute/virtualMachines?api-version=2023-07-01');
-        
-        let vmRequest = new Request(vmURL, {
-            method: 'GET',
-            mode: 'cors',
-            headers: header
+        fetch(vmRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            VMInfo = data;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
         });
 
-        console.log(vmRequest);
-
-        fetch(vmRequest)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                VMInfo = data;
-            })
-            .catch(error => {
-                console.log("Error message:")
-                console.error(error.message);
-            });
-
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(VMInfo);
-                    }, 2000);
-            })
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(VMInfo);
+                }, 2000);
+        })
     }
 
-    async function addToHTML() {
+    async function addVMToHTML() {
         const VMInfo = await fetchVM();
 
         for(let i = 0; i < VMInfo.value.length; i++) {
@@ -115,5 +138,5 @@ let sendRequest = (ev) => {
         }
     }
     
-    addToHTML();
+    addVMToHTML();
 }
