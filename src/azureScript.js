@@ -1,14 +1,19 @@
+import jwt_decode from "jwt-decode";
+
 var homeURL = window.location.href;
 var URLhash = window.location.hash
 
 document.addEventListener('DOMContentLoaded', () => {
-    if(!URLhash || !sessionStorage.getItem('MyToken')) {
+    if((!URLhash && !sessionStorage.getItem('MyToken')) || (sessionStorage.getItem('MyToken') && (jwt_decode(sessionStorage.getItem('MyToken')).exp < Date.now() / 1000))) {
+        sessionStorage.clear();
         oauth2Signin();
-    } else if(URLhash == '#VM') {
+    } else if (URLhash == '#VM') {
         sendVMRequest();
-    } else {
+    } else if (!sessionStorage.getItem('MyToken')) {
         URLhash = URLhash.replace('#access_token=','').split('&')[0];
         sessionStorage.setItem('MyToken', URLhash);
+        sendSubRequest();
+    } else {
         sendSubRequest();
     }
 })
@@ -40,6 +45,10 @@ function oauth2Signin() {
 }
 
 let sendSubRequest = (ev) => {
+
+    if(sessionStorage.getItem('subID')) {
+        return;
+    }
 
     let subscriptionURL = 'https://management.azure.com/subscriptions?api-version=2022-12-01';
     let token = sessionStorage.getItem('MyToken');
@@ -75,22 +84,35 @@ let sendSubRequest = (ev) => {
 }
 
 var VMButton;
+var VMDiv
 
-if(sessionStorage.getItem('subID')) {
-    var navElement = document.getElementById('app-navigation-vue');
-
-    VMButton = document.createElement('button');
-    VMButton.setAttribute('class', 'app-navigation-button');
-
-    const entryText = document.createTextNode('Virtual Machines');
-    VMButton.appendChild(entryText);
-    navElement.appendChild(VMButton);
+if(!sessionStorage.getItem('subID')) {
+    setTimeout(createVMButton, 2000);
+} else {
+    createVMButton();
 }
 
-VMButton.addEventListener('click', () => {
-    window.location.hash = '#VM';
-    location.reload();
-});
+
+function createVMButton() {
+    if(sessionStorage.getItem('subID')) {
+        var navElement = document.getElementById('app-navigation-vue');
+    
+        VMButton = document.createElement('a');
+        VMButton.setAttribute('class', 'app-navigation-entry-link');
+        VMDiv = document.createElement('div');
+        VMDiv.setAttribute('class', 'app-navigation-entry');
+    
+        const entryText = document.createTextNode('Virtual Machines');
+        VMButton.appendChild(entryText);
+        VMDiv.appendChild(VMButton);
+        navElement.appendChild(VMDiv);
+        
+        VMButton.addEventListener('click', () => {
+            window.location.hash = '#VM';
+            location.reload();
+        });
+    }
+}
 
 let sendVMRequest = (ev) => {
     const subscriptionID = sessionStorage.getItem('subID');
@@ -130,11 +152,13 @@ let sendVMRequest = (ev) => {
         const VMInfo = await fetchVM();
 
         for(let i = 0; i < VMInfo.value.length; i++) {
-            console.log(VMInfo.value[i].name);
-            const newEntry = document.createElement('div');
+            const newEntry = document.createElement('tr');
+            newEntry.setAttribute('class', 'content-entry');
             const entryText = document.createTextNode(VMInfo.value[i].name);
             newEntry.appendChild(entryText);
-            document.body.insertBefore(newEntry, document.getElementById('vm-footer'));
+
+            const tableElement = document.getElementById('content-list');
+            tableElement.appendChild(newEntry);
         }
     }
     
