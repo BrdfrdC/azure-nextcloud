@@ -1,6 +1,10 @@
+import jwt_decode from "jwt-decode";
+
+//Get URL and URL hash
 var homeURL = window.location.href;
 var URLhash = window.location.hash
 
+//When page loads
 document.addEventListener('DOMContentLoaded', () => {
     if(!URLhash) {
         oauth2Signin();
@@ -12,12 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 function oauth2Signin() {
+
+    //Oauth2 endpoint
     var endpoint = 'https://login.microsoftonline.com/common/oauth2/authorize';
 
+    //This is the form we need in order to submit for authorization
     var form = document.createElement('form');
     form.setAttribute('method', 'GET');
     form.setAttribute('action', endpoint);
 
+    //Parameters for the form
     var params = {
         'client_id': '457a5491-f470-4c0c-beae-efa300de112b',
         'redirect_uri': homeURL,
@@ -25,6 +33,7 @@ function oauth2Signin() {
         'resource': 'https://management.core.windows.net',
     }
 
+    //Inputing the parameters into the form
     for (var p in params) {
         var input = document.createElement('input');
         input.setAttribute('type', 'hidden');
@@ -33,24 +42,29 @@ function oauth2Signin() {
         form.appendChild(input);
     }
     
+    //Submit form
     document.body.appendChild(form);
     form.submit();
+
+    //After this, we're redirected back to the Nextcloud app with the token in the URL hash
 }
 
 let sendRequest = (ev) => {
 
+    //Getting parameters needed to make the API call
     let subscriptionURL = 'https://management.azure.com/subscriptions?api-version=2022-12-01';
     let token = sessionStorage.getItem('MyToken');
     let header = new Headers();
-    //header.append('Authentication', `Bearer ${token}`);
     header.append('Authorization', `Bearer ${token}`);
 
+    //Creating the request
     let request = new Request(subscriptionURL, {
         method: 'GET',
         mode: 'cors',
         headers: header
     });
 
+    //Create function that actually sends the request
     function fetchSubscriptionID() {
         let subID;
         console.log(request);
@@ -70,6 +84,7 @@ let sendRequest = (ev) => {
         })
     }
 
+    //Create function that actually sends the request
     async function fetchVM() {
         const subscriptionID = await fetchSubscriptionID();
         sessionStorage.setItem('subID', subscriptionID);
