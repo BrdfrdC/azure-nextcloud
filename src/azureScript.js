@@ -6,12 +6,17 @@ var URLhash = window.location.hash
 
 //When page loads
 document.addEventListener('DOMContentLoaded', () => {
-    if(!URLhash) {
+    if((!URLhash && !sessionStorage.getItem('MyToken')) || (sessionStorage.getItem('MyToken') && (jwt_decode(sessionStorage.getItem('MyToken')).exp < Date.now() / 1000))) {
+        sessionStorage.clear();
         oauth2Signin();
-    } else {
+    } else if (URLhash == '#VM') {
+        sendVMRequest();
+    } else if (!sessionStorage.getItem('MyToken')) {
         URLhash = URLhash.replace('#access_token=','').split('&')[0];
         sessionStorage.setItem('MyToken', URLhash);
-        sendRequest();
+        sendSubRequest();
+    } else {
+        sendSubRequest();
     }
 })
 
@@ -49,7 +54,11 @@ function oauth2Signin() {
     //After this, we're redirected back to the Nextcloud app with the token in the URL hash
 }
 
-let sendRequest = (ev) => {
+let sendSubRequest = (ev) => {
+
+    if(sessionStorage.getItem('subID')) {
+        return;
+    }
 
     //Getting parameters needed to make the API call
     let subscriptionURL = 'https://management.azure.com/subscriptions?api-version=2022-12-01';
@@ -67,12 +76,12 @@ let sendRequest = (ev) => {
     //Create function that actually sends the request
     function fetchSubscriptionID() {
         let subID;
-        console.log(request);
         fetch(request)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
                 subID = data.value[0].id;
+                sessionStorage.setItem('subID', subID);
             })
             .catch(error => {
                 console.error(error.message);
@@ -82,53 +91,89 @@ let sendRequest = (ev) => {
                 resolve(subID);
                 }, 2000);
         })
+    }    
+    fetchSubscriptionID();
+}
+
+var VMButton;
+var VMDiv
+
+if(!sessionStorage.getItem('subID')) {
+    setTimeout(createVMButton, 2000);
+} else {
+    createVMButton();
+}
+
+
+function createVMButton() {
+    if(sessionStorage.getItem('subID')) {
+        var navElement = document.getElementById('app-navigation-vue');
+    
+        VMButton = document.createElement('a');
+        VMButton.setAttribute('class', 'app-navigation-entry-link');
+        VMDiv = document.createElement('div');
+        VMDiv.setAttribute('class', 'app-navigation-entry');
+    
+        const entryText = document.createTextNode('Virtual Machines');
+        VMButton.appendChild(entryText);
+        VMDiv.appendChild(VMButton);
+        navElement.appendChild(VMDiv);
+        
+        VMButton.addEventListener('click', () => {
+            window.location.hash = '#VM';
+            location.reload();
+        });
     }
+}
+
+let sendVMRequest = (ev) => {
+    const subscriptionID = sessionStorage.getItem('subID');
+    let VMInfo;
+
+    let vmURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Compute/virtualMachines?api-version=2023-07-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let vmRequest = new Request(vmURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
 
     //Create function that actually sends the request
     async function fetchVM() {
-        const subscriptionID = await fetchSubscriptionID();
-        sessionStorage.setItem('subID', subscriptionID);
-        let VMInfo;
-
-        let vmURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Compute/virtualMachines?api-version=2023-07-01');
-        
-        let vmRequest = new Request(vmURL, {
-            method: 'GET',
-            mode: 'cors',
-            headers: header
+        fetch(vmRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            VMInfo = data;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
         });
 
-        console.log(vmRequest);
-
-        fetch(vmRequest)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                VMInfo = data;
-            })
-            .catch(error => {
-                console.log("Error message:")
-                console.error(error.message);
-            });
-
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(VMInfo);
-                    }, 2000);
-            })
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(VMInfo);
+                }, 2000);
+        })
     }
 
-    async function addToHTML() {
+    async function addVMToHTML() {
         const VMInfo = await fetchVM();
 
         for(let i = 0; i < VMInfo.value.length; i++) {
-            console.log(VMInfo.value[i].name);
-            const newEntry = document.createElement('div');
+            const newEntry = document.createElement('tr');
+            newEntry.setAttribute('class', 'content-entry');
             const entryText = document.createTextNode(VMInfo.value[i].name);
             newEntry.appendChild(entryText);
-            document.body.insertBefore(newEntry, document.getElementById('vm-footer'));
+
+            const tableElement = document.getElementById('content-list');
+            tableElement.appendChild(newEntry);
         }
     }
     
-    addToHTML();
+    addVMToHTML();
 }

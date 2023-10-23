@@ -24,11 +24,13 @@ use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\ApiController;
+use OCP\AppFramework\Http\Attribute\CORS;
 use OCP\IRequest;
 
 use OCA\Azure\AppInfo\Application;
 
-class PageController extends Controller {
+class PageController extends ApiController {
 
 	private $response;
 
