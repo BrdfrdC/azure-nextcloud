@@ -18,6 +18,9 @@ Util::addStyle($appId, 'main');
 
 </div>
 <main id="app-content-vue" class="app-content no-snapper">
+    <div id="title-wrapper" class="title-wrapper">
+
+    </div>
     <table class="content-list" id="content-list">
         
     </table>
