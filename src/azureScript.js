@@ -2,17 +2,20 @@ import jwt_decode from "jwt-decode";
 import { concat } from "lodash";
 
 //Get URL and URL hash
-var homeURL = window.location.href;
 var URLhash = window.location.hash;
+var homeURL;
 
 //When page loads
 document.addEventListener('DOMContentLoaded', () => {
-    if((!URLhash && !sessionStorage.getItem('MyToken')) || (sessionStorage.getItem('MyToken') && (jwt_decode(sessionStorage.getItem('MyToken')).exp < Date.now() / 1000))) {
+    if(((!URLhash || URLhash.length < 100) && !sessionStorage.getItem('MyToken')) || (sessionStorage.getItem('MyToken') && (jwt_decode(sessionStorage.getItem('MyToken')).exp < Date.now() / 1000))) {
         sessionStorage.clear();
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+        homeURL = window.location.href;
         oauth2Signin();
     } else if (!sessionStorage.getItem('MyToken')) {
         URLhash = URLhash.replace('#access_token=','').split('&')[0];
         sessionStorage.setItem('MyToken', URLhash);
+        history.pushState("", document.title, window.location.pathname + window.location.search);
         sendSubRequest();
     } else if (URLhash) {
         switch(URLhash.split('$')[0]) {
@@ -27,8 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(URLhash.split('$')[2]);
                 changeVMStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
                 break;
-            case '#app-services':
+            case '#app-services-home':
                 sendAppServicesRequest();
+                break;
+            case '#app-start':
+                console.log(URLhash.split('$')[2]);
+                changeAppStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], false);
+                break;
+            case '#app-stop':
+                console.log(URLhash.split('$')[2]);
+                changeAppStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
                 break;
             default:
                 break;
@@ -198,7 +209,7 @@ function createButtons() {
         });
 
         appServicesButton.addEventListener('click', () => {
-            window.location.hash = '#app-services';
+            window.location.hash = '#app-services-home';
             location.reload();
         });
     }
@@ -430,12 +441,69 @@ let sendAppServicesRequest = (ev) => {
         const titleElement = document.getElementById('title-wrapper');
         titleElement.appendChild(pageTitle);
 
-        //Add each App Service name to page
+        //Create header and add to page
+        const newEntry = document.createElement('tr');
+        newEntry.setAttribute('class', 'content-entry');
+
+        //Create element for name header
+        const nameElement = document.createElement('div');
+        nameElement.setAttribute('class', 'content-name');
+        const nameText = document.createTextNode('Name');
+        nameElement.appendChild(nameText);
+        newEntry.appendChild(nameElement);
+
+        //Create element for status header
+        const stateElement = document.createElement('div');
+        stateElement.setAttribute('class', 'content-state');
+        const stateText = document.createTextNode('Status');
+        stateElement.appendChild(stateText);
+        newEntry.appendChild(stateElement);
+
+        const tableElement = document.getElementById('content-list');
+        tableElement.appendChild(newEntry);
+
+        //Add each App Service info to page
         for(let i = 0; i < appServiceInfo.value.length; i++) {
+
+            //Create table entry
             const newEntry = document.createElement('tr');
             newEntry.setAttribute('class', 'content-entry');
+
+            //Create element for VM name
+            const nameElement = document.createElement('div');
+            nameElement.setAttribute('class', 'content-name');
             const entryText = document.createTextNode(appServiceInfo.value[i].name);
-            newEntry.appendChild(entryText);
+            nameElement.appendChild(entryText);
+            newEntry.appendChild(nameElement);
+
+            //Create element for app status
+            const stateElement = document.createElement('div');
+            stateElement.setAttribute('class', 'content-state');
+            const stateText = document.createTextNode(appServiceInfo.value[i].properties.state);
+            stateElement.appendChild(stateText);
+            newEntry.appendChild(stateElement);
+
+            //Create start/stop button
+            const buttonElement = document.createElement('button');
+            buttonElement.setAttribute('class', 'content-button');
+            var buttonText;
+
+            if(appServiceInfo.value[i].properties.state == 'Running') {
+                buttonText = document.createTextNode('Stop App');
+                buttonElement.addEventListener('click',() => {
+                    window.location.hash = '#app-stop$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
+                    location.reload();
+                })
+            } else {
+                buttonText = document.createTextNode('Start App');
+                buttonElement.addEventListener('click',() => {
+                    window.location.hash = '#app-start$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
+                    location.reload();
+                })
+            }
+
+            buttonElement.appendChild(buttonText);
+            newEntry.appendChild(buttonElement);
 
             const tableElement = document.getElementById('content-list');
             tableElement.appendChild(newEntry);
@@ -443,4 +511,64 @@ let sendAppServicesRequest = (ev) => {
     }
     
     addAppServicesToHTML();
+}
+
+function changeAppStatusRequest(appName, resourceGroup, appRunning) {
+    console.log(appRunning);
+    const subscriptionID = sessionStorage.getItem('subID');
+    let changeStatusURL;
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+    let changeStatusRequest
+
+    if(appRunning) {
+        changeStatusURL = 'https://management.azure.com'.concat(subscriptionID, 
+            '/resourceGroups/', resourceGroup, '/providers/Microsoft.Web/sites/', appName, 
+            '/stop?api-version=2022-03-01');
+        changeStatusRequest = new Request(changeStatusURL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: header
+        });
+    } else {
+        changeStatusURL = 'https://management.azure.com'.concat(subscriptionID, 
+            '/resourceGroups/', resourceGroup, '/providers/Microsoft.Web/sites/', appName, 
+            '/start?api-version=2022-03-01');
+        changeStatusRequest = new Request(changeStatusURL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: header
+        });
+    }
+
+    async function fetchChangeStatus() {
+        let statusChanged;
+        fetch(changeStatusRequest)
+        .then(data => {
+            console.log(data)
+            statusChanged = true;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(statusChanged);
+                }, 6000);
+        })
+    }
+
+    async function goBack() {
+        const changeStatus = await fetchChangeStatus();
+        console.log(changeStatus);
+        if (changeStatus) {
+            window.location.hash = '#app-services-home';
+            location.reload();
+        }
+    }
+
+    goBack();
 }
