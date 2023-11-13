@@ -24,7 +24,7 @@
             <name>Azure</name>
             <!-- syntax is APP_ID.CONTROLLER_NAME.METHOD_NAME -->
             <route>azure.page.mainPage</route>
-            <icon>app.svg</icon>
+            <icon>/apps/azure/img/app.svg</icon>
             <order>8</order>
         </navigation>
     </navigations>

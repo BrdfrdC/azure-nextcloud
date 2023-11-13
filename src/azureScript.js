@@ -1,5 +1,4 @@
 import jwt_decode from "jwt-decode";
-import { concat } from "lodash";
 
 //Get URL and URL hash
 var URLhash = window.location.hash;
@@ -30,6 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(URLhash.split('$')[2]);
                 changeVMStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
                 break;
+            case '#VM-restart':
+                console.log(URLhash.split('$')[2]);
+                restartVMRequest(URLhash.split('$')[1], URLhash.split('$')[2]);
+                break;
             case '#app-services-home':
                 sendAppServicesRequest();
                 break;
@@ -40,6 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
             case '#app-stop':
                 console.log(URLhash.split('$')[2]);
                 changeAppStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
+                break;
+            case '#app-restart':
+                console.log(URLhash.split('$')[2]);
+                restartAppRequest(URLhash.split('$')[1], URLhash.split('$')[2]);
+                break;
+            case '#resource-groups-home':
+                sendResourceGroupRequest();
                 break;
             default:
                 break;
@@ -88,8 +98,9 @@ let sendSubRequest = (ev) => {
     //Getting parameters needed to make the API call
     let subscriptionURL = 'https://management.azure.com/subscriptions?api-version=2022-12-01';
     let token = sessionStorage.getItem('MyToken');
-    let header = new Headers();
-    header.append('Authorization', `Bearer ${token}`);
+    let header = new Headers({'Authorization': `Bearer ${token}`});
+    //header.append('Authorization', `Bearer ${token}`);
+    console.log(header);
 
     //Creating the request
     let request = new Request(subscriptionURL, {
@@ -97,6 +108,8 @@ let sendSubRequest = (ev) => {
         mode: 'cors',
         headers: header
     });
+
+    console.log(request);
 
     //Create function that actually sends the request
     async function fetchSubscriptionID() {
@@ -131,15 +144,26 @@ let sendSubRequest = (ev) => {
         titleElement.appendChild(pageTitle);
 
         //Add each subscription name to page
-        for(let i = 0; i < subInfo.value.length; i++) {
+        if(subInfo.value.length > 0) {
+            for(let i = 0; i < subInfo.value.length; i++) {
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
+                const entryText = document.createTextNode(subInfo.value[i].displayName);
+                newEntry.appendChild(entryText);
+    
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+            }
+        } else {
             const newEntry = document.createElement('tr');
             newEntry.setAttribute('class', 'content-entry');
-            const entryText = document.createTextNode(subInfo.value[i].displayName);
+            const entryText = document.createTextNode("No Subscriptions");
             newEntry.appendChild(entryText);
 
             const tableElement = document.getElementById('content-list');
             tableElement.appendChild(newEntry);
         }
+        
     }
 
     addSubtoHTML();
@@ -155,6 +179,7 @@ function createButtons() {
     var subscriptionsButton;
     var VMButton;
     var appServicesButton;
+    var resourceGroupButton;
     var baseDiv;
 
 
@@ -172,6 +197,15 @@ function createButtons() {
         var entryText = document.createTextNode('Subscriptions');
         subscriptionsButton.appendChild(entryText);
         baseDiv.appendChild(subscriptionsButton);
+
+        //Create Resource Groups Button
+        resourceGroupButton = document.createElement('a');
+        resourceGroupButton.setAttribute('class', 'app-navigation-entry-link');
+
+        //Add Resource Groups button to the div
+        entryText = document.createTextNode('Resource Groups');
+        resourceGroupButton.appendChild(entryText);
+        baseDiv.appendChild(resourceGroupButton);
     
         //Create VM button
         VMButton = document.createElement('a');
@@ -212,10 +246,13 @@ function createButtons() {
             window.location.hash = '#app-services-home';
             location.reload();
         });
+
+        resourceGroupButton.addEventListener('click', () => {
+            window.location.hash = '#resource-groups-home';
+            location.reload();
+        });
     }
 }
-
-let statusButtonClicked = false;
 
 let sendVMRequest = (ev) => {
     const subscriptionID = sessionStorage.getItem('subID');
@@ -285,50 +322,79 @@ let sendVMRequest = (ev) => {
         tableElement.appendChild(newEntry);
 
         //Add each VM info to page
-        for(let i = 0; i < VMInfo.value.length; i++) {
+        if(VMInfo.value.length > 0) {
+            for(let i = 0; i < VMInfo.value.length; i++) {
 
-            //Create table entry
-            const newEntry = document.createElement('tr');
-            newEntry.setAttribute('class', 'content-entry');
+                //Create table entry
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
 
-            //Create element for VM name
+                //Create element for VM name
+                const nameElement = document.createElement('div');
+                nameElement.setAttribute('class', 'content-name');
+                const nameText = document.createTextNode(VMInfo.value[i].name);
+                nameElement.appendChild(nameText);
+                newEntry.appendChild(nameElement);
+
+                //Create element for VM status
+                const stateElement = document.createElement('div');
+                stateElement.setAttribute('class', 'content-state');
+                let stateText = document.createTextNode(VMInfo.value[i].properties.instanceView.statuses[1].displayStatus);
+
+                if(VMInfo.value[i].properties.instanceView.statuses[1].displayStatus == 'VM deallocated' && VMInfo.value[i].properties.instanceView.statuses[0].displayStatus == 'Updating') {
+                    stateText = document.createTextNode('VM starting');
+                }
+
+                stateElement.appendChild(stateText);
+                newEntry.appendChild(stateElement);
+
+                //Create start/stop button
+                const buttonElement = document.createElement('button');
+                buttonElement.setAttribute('class', 'content-button');
+                var buttonText;
+
+                if(stateElement.innerHTML == 'VM running' || stateElement.innerHTML == 'VM starting') {
+                    buttonText = document.createTextNode('Stop VM');
+                    buttonElement.addEventListener('click',() => {
+                        window.location.hash = '#VM-stop$'.concat(VMInfo.value[i].name, '$', VMInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    })
+                } else {
+                    buttonText = document.createTextNode('Start VM');
+                    buttonElement.addEventListener('click',() => {
+                        window.location.hash = '#VM-start$'.concat(VMInfo.value[i].name, '$', VMInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    })
+                }
+
+                buttonElement.appendChild(buttonText);
+                newEntry.appendChild(buttonElement);
+
+                //Create restart button
+
+                if(stateElement.innerHTML == 'VM running') {
+                    const restartElement = document.createElement('button');
+                    restartElement.setAttribute('class', 'content-button');
+                    const restartText = document.createTextNode('Restart VM');
+                    restartElement.appendChild(restartText);
+    
+                    restartElement.addEventListener('click',() => {
+                        window.location.hash = '#VM-restart$'.concat(VMInfo.value[i].name, '$', VMInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    });
+    
+                    newEntry.appendChild(restartElement);
+                }
+
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+            }
+        } else {
             const nameElement = document.createElement('div');
             nameElement.setAttribute('class', 'content-name');
-            const nameText = document.createTextNode(VMInfo.value[i].name);
+            const nameText = document.createTextNode("No VMs");
             nameElement.appendChild(nameText);
             newEntry.appendChild(nameElement);
-
-            //Create element for VM status
-            const stateElement = document.createElement('div');
-            stateElement.setAttribute('class', 'content-state');
-            const stateText = document.createTextNode(VMInfo.value[i].properties.instanceView.statuses[1].displayStatus);
-            stateElement.appendChild(stateText);
-            newEntry.appendChild(stateElement);
-
-            //Create start/stop button
-            const buttonElement = document.createElement('button');
-            buttonElement.setAttribute('class', 'content-button');
-            var buttonText;
-
-            if(VMInfo.value[i].properties.instanceView.statuses[1].displayStatus == 'VM running') {
-                buttonText = document.createTextNode('Stop VM');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#VM-stop$'.concat(VMInfo.value[i].name, '$', VMInfo.value[i].id.split('/')[4]);
-                    location.reload();
-                })
-            } else {
-                buttonText = document.createTextNode('Start VM');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#VM-start$'.concat(VMInfo.value[i].name, '$', VMInfo.value[i].id.split('/')[4]);
-                    location.reload();
-                })
-            }
-
-            buttonElement.appendChild(buttonText);
-            newEntry.appendChild(buttonElement);
-
-            const tableElement = document.getElementById('content-list');
-            tableElement.appendChild(newEntry);
         }
     }
     
@@ -336,6 +402,32 @@ let sendVMRequest = (ev) => {
 }
 
 function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
+    
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+
     console.log(vmRunning);
     const subscriptionID = sessionStorage.getItem('subID');
     let changeStatusURL;
@@ -379,14 +471,87 @@ function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(statusChanged);
-                }, 6000);
+                }, 2000);
         })
     }
 
     async function goBack() {
         const changeStatus = await fetchChangeStatus();
+
         console.log(changeStatus);
         if (changeStatus) {
+            window.location.hash = '#VM-home';
+            location.reload();
+        }
+    }
+
+    goBack();
+}
+
+function restartVMRequest(vmName, resourceGroup) {
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+
+    const subscriptionID = sessionStorage.getItem('subID');
+
+    let restartURL = 'https://management.azure.com'.concat(subscriptionID, 
+    '/resourceGroups/', resourceGroup, '/providers/Microsoft.Compute/virtualMachines/', vmName, 
+    '/restart?api-version=2023-07-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let restartRequest = new Request(restartURL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: header
+    });
+
+    async function fetchRestart() {
+        let restart;
+        fetch(restartRequest)
+        .then(data => {
+            console.log(data)
+            restart = true;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(restart);
+                }, 2000);
+        })
+    }
+
+    async function goBack() {
+        const restart = await fetchRestart();
+        console.log(restart);
+        if (restart) {
             window.location.hash = '#VM-home';
             location.reload();
         }
@@ -463,50 +628,74 @@ let sendAppServicesRequest = (ev) => {
         tableElement.appendChild(newEntry);
 
         //Add each App Service info to page
-        for(let i = 0; i < appServiceInfo.value.length; i++) {
+        if(appServiceInfo.value.length > 0) {
+            for(let i = 0; i < appServiceInfo.value.length; i++) {
 
-            //Create table entry
-            const newEntry = document.createElement('tr');
-            newEntry.setAttribute('class', 'content-entry');
+                //Create table entry
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
 
-            //Create element for VM name
+                //Create element for app name
+                const nameElement = document.createElement('div');
+                nameElement.setAttribute('class', 'content-name');
+                const entryText = document.createTextNode(appServiceInfo.value[i].name);
+                nameElement.appendChild(entryText);
+                newEntry.appendChild(nameElement);
+
+                //Create element for app status
+                const stateElement = document.createElement('div');
+                stateElement.setAttribute('class', 'content-state');
+                const stateText = document.createTextNode(appServiceInfo.value[i].properties.state);
+                stateElement.appendChild(stateText);
+                newEntry.appendChild(stateElement);
+
+                //Create start/stop button
+                const buttonElement = document.createElement('button');
+                buttonElement.setAttribute('class', 'content-button');
+                var buttonText;
+
+                if(appServiceInfo.value[i].properties.state == 'Running') {
+                    buttonText = document.createTextNode('Stop App');
+                    buttonElement.addEventListener('click',() => {
+                        window.location.hash = '#app-stop$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    })
+                } else {
+                    buttonText = document.createTextNode('Start App');
+                    buttonElement.addEventListener('click',() => {
+                        window.location.hash = '#app-start$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    })
+                }
+
+                buttonElement.appendChild(buttonText);
+                newEntry.appendChild(buttonElement);
+
+                //Create restart button
+
+                if(stateElement.innerHTML == 'Running') {
+                    const restartElement = document.createElement('button');
+                    restartElement.setAttribute('class', 'content-button');
+                    const restartText = document.createTextNode('Restart App');
+                    restartElement.appendChild(restartText);
+    
+                    restartElement.addEventListener('click',() => {
+                        window.location.hash = '#app-restart$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
+                        location.reload();
+                    });
+
+                    newEntry.appendChild(restartElement);
+                }
+
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+            }
+        } else {
             const nameElement = document.createElement('div');
             nameElement.setAttribute('class', 'content-name');
-            const entryText = document.createTextNode(appServiceInfo.value[i].name);
+            const entryText = document.createTextNode("No Apps");
             nameElement.appendChild(entryText);
             newEntry.appendChild(nameElement);
-
-            //Create element for app status
-            const stateElement = document.createElement('div');
-            stateElement.setAttribute('class', 'content-state');
-            const stateText = document.createTextNode(appServiceInfo.value[i].properties.state);
-            stateElement.appendChild(stateText);
-            newEntry.appendChild(stateElement);
-
-            //Create start/stop button
-            const buttonElement = document.createElement('button');
-            buttonElement.setAttribute('class', 'content-button');
-            var buttonText;
-
-            if(appServiceInfo.value[i].properties.state == 'Running') {
-                buttonText = document.createTextNode('Stop App');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#app-stop$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
-                    location.reload();
-                })
-            } else {
-                buttonText = document.createTextNode('Start App');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#app-start$'.concat(appServiceInfo.value[i].name, '$', appServiceInfo.value[i].id.split('/')[4]);
-                    location.reload();
-                })
-            }
-
-            buttonElement.appendChild(buttonText);
-            newEntry.appendChild(buttonElement);
-
-            const tableElement = document.getElementById('content-list');
-            tableElement.appendChild(newEntry);
         }
     }
     
@@ -514,6 +703,31 @@ let sendAppServicesRequest = (ev) => {
 }
 
 function changeAppStatusRequest(appName, resourceGroup, appRunning) {
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+    
     console.log(appRunning);
     const subscriptionID = sessionStorage.getItem('subID');
     let changeStatusURL;
@@ -557,7 +771,7 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(statusChanged);
-                }, 6000);
+                }, 5000);
         })
     }
 
@@ -571,4 +785,166 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
     }
 
     goBack();
+}
+
+function restartAppRequest(appName, resourceGroup) {
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+
+    const subscriptionID = sessionStorage.getItem('subID');
+
+    let restartURL = 'https://management.azure.com'.concat(subscriptionID, 
+    '/resourceGroups/', resourceGroup, '/providers/Microsoft.Web/sites/', appName, 
+    '/restart?api-version=2022-03-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let restartRequest = new Request(restartURL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: header
+    });
+
+    async function fetchRestart() {
+        let restart;
+        fetch(restartRequest)
+        .then(data => {
+            console.log(data)
+            restart = true;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(restart);
+                }, 2000);
+        })
+    }
+
+    async function goBack() {
+        const restart = await fetchRestart();
+        console.log(restart);
+        if (restart) {
+            window.location.hash = '#app-services-home';
+            location.reload();
+        }
+    }
+
+    goBack();
+}
+
+let sendResourceGroupRequest = (ev) => {
+    const subscriptionID = sessionStorage.getItem('subID');
+    let ResourceGroupInfo;
+
+    let ResourceGroupURL = 'https://management.azure.com'.concat(subscriptionID, '/resourcegroups?api-version=2021-04-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let ResourceGroupRequest = new Request(ResourceGroupURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
+
+    //Create function that actually sends the request
+    async function fetchResourceGroup() {
+        fetch(ResourceGroupRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            ResourceGroupInfo = data;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(ResourceGroupInfo);
+                }, 2000);
+        })
+    }
+
+    async function addResourceGroupToHTML() {
+        const resourceGroupInfo = await fetchResourceGroup();
+
+        //Create title and add to page
+        const pageTitle = document.createElement('h1');
+        pageTitle.setAttribute('class', 'content-title');
+        const titleText = document.createTextNode("Resource Groups");
+        pageTitle.appendChild(titleText);
+        const titleElement = document.getElementById('title-wrapper');
+        titleElement.appendChild(pageTitle);
+
+        //Create header and add to page
+        const newEntry = document.createElement('tr');
+        newEntry.setAttribute('class', 'content-entry');
+
+        //Create element for name header
+        const nameElement = document.createElement('div');
+        nameElement.setAttribute('class', 'content-name');
+        const nameText = document.createTextNode('Name');
+        nameElement.appendChild(nameText);
+        newEntry.appendChild(nameElement);
+
+        const tableElement = document.getElementById('content-list');
+        tableElement.appendChild(newEntry);
+
+        //Add each App Service info to page
+        if(resourceGroupInfo.value.length > 0) {
+            for(let i = 0; i < resourceGroupInfo.value.length; i++) {
+
+                //Create table entry
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
+
+                //Create element for resource group name
+                const nameElement = document.createElement('div');
+                nameElement.setAttribute('class', 'content-name');
+                const entryText = document.createTextNode(resourceGroupInfo.value[i].name);
+                nameElement.appendChild(entryText);
+                newEntry.appendChild(nameElement);
+
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+            }
+        } else {
+            const nameElement = document.createElement('div');
+            nameElement.setAttribute('class', 'content-name');
+            const entryText = document.createTextNode("No Resource Groups");
+            nameElement.appendChild(entryText);
+            newEntry.appendChild(nameElement);
+        }
+    }
+    
+    addResourceGroupToHTML();
 }
