@@ -51,6 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
             case '#resource-groups-home':
                 sendResourceGroupRequest();
                 break;
+            case '#resource-groups-create':
+                console.log(URLhash.split('$')[2]);
+                createResourceGroup(URLhash.split('$')[1], URLhash.split('$')[2]);
+                break;
+            case '#DB-servers':
+                sendServerRequest();
+                break;
+            case '#DB-resource-groups':
+                sendDBResourceGroupRequest();
+                break;
             default:
                 break;
         }
@@ -227,6 +237,24 @@ function createButtons() {
 
         //Add div to page
         navElement.appendChild(baseDiv);
+
+        // Inside createButtons function
+
+        var ServerButton
+
+        //Create Server button
+        ServerButton = document.createElement('a');
+        ServerButton.setAttribute('class', 'app-navigation-entry-link');
+    
+        //Add Server button to the div
+        entryText = document.createTextNode('Servers');
+        ServerButton.appendChild(entryText);
+        baseDiv.appendChild(ServerButton);
+
+        ServerButton.addEventListener('click', () => {
+            window.location.hash = '#DB-servers';
+            location.reload();
+        });
 
         //Events for when the user clicks the appropriate button
         //Adds the hash to the URL to let the site know what page to load
@@ -559,7 +587,6 @@ function restartVMRequest(vmName, resourceGroup) {
 
     goBack();
 }
-
 let sendAppServicesRequest = (ev) => {
     const subscriptionID = sessionStorage.getItem('subID');
     let appServicesInfo;
@@ -919,7 +946,7 @@ let sendResourceGroupRequest = (ev) => {
         const tableElement = document.getElementById('content-list');
         tableElement.appendChild(newEntry);
 
-        //Add each App Service info to page
+        //Add each Resource Group info to page
         if(resourceGroupInfo.value.length > 0) {
             for(let i = 0; i < resourceGroupInfo.value.length; i++) {
 
@@ -943,8 +970,429 @@ let sendResourceGroupRequest = (ev) => {
             const entryText = document.createTextNode("No Resource Groups");
             nameElement.appendChild(entryText);
             newEntry.appendChild(nameElement);
+
+            const tableElement = document.getElementById('content-list');
+            tableElement.appendChild(newEntry);
+        }
+
+        //Create "Create New Resource Group" button
+        const buttonElement = document.createElement('button');
+        buttonElement.setAttribute('class', 'create-button');
+        var buttonText = document.createTextNode('Create New Resource Group');
+
+        //Create "Create New Resource Group" form
+        const formContainer = document.createElement('div');
+        formContainer.setAttribute('class','form-container');
+        formContainer.hidden = true;
+        const formElement = document.createElement('form');
+        formElement.setAttribute('class', 'form-element');
+        formContainer.appendChild(formElement);
+
+        const exitElement = document.createElement('button');
+        exitElement.setAttribute('class', 'exit-button');
+        var exitX = document.createTextNode('×');
+        exitElement.appendChild(exitX);
+
+        exitElement.addEventListener('click',() => {
+            openResourceGroupForm(formContainer, false);
+        })
+
+        formElement.appendChild(exitElement);
+
+        const formTitle = document.createElement('h1');
+        formTitle.setAttribute('class', 'form-title');
+        var formTitleText = document.createTextNode('Create New Resource Group');
+        formTitle.appendChild(formTitleText);
+        formElement.appendChild(formTitle);
+        
+        const nameLabel = document.createElement('label');
+        nameLabel.setAttribute('for', 'name');
+        nameLabel.setAttribute('class', 'resource-group-label');
+        var labelText = document.createTextNode('Resource Group Name');
+        nameLabel.appendChild(labelText);
+        formElement.appendChild(nameLabel);
+
+        const nameInput = document.createElement('input');
+        nameInput.setAttribute('type', 'text');
+        nameInput.setAttribute('class', 'form-input');
+        nameInput.setAttribute('placeholder', 'Enter Resource Group Name');
+        nameInput.setAttribute('name', 'RGname');
+        nameInput.required = true;
+        formElement.appendChild(nameInput);
+
+        const selectLabel = document.createElement('label');
+        selectLabel.setAttribute('for', 'location');
+        selectLabel.setAttribute('class', 'resource-group-label');
+        var labelLocationText = document.createTextNode('Resource Group Location');
+        selectLabel.appendChild(labelLocationText);
+        formElement.appendChild(selectLabel);
+
+        const selectElement = document.createElement('select');
+        selectElement.setAttribute('name','location');
+        selectElement.setAttribute('class', 'form-input');
+        const disabledOption = document.createElement('option');
+        var disabledText = document.createTextNode('Please Select a Location');
+        disabledOption.appendChild(disabledText);
+        disabledOption.selected = true;
+        disabledOption.disabled = true
+        selectElement.appendChild(disabledOption);
+
+        const locationOptions = ["eastus", "East US", "eastus2", "East US 2", "centralus", "Central US", 
+            "northcentralus", "North Central US", "southcentralus", "South Central US", "westus", "West US", 
+            "westus2", "West US 2", "westus3", "West US 3"];
+
+        for(let i = 0; i < locationOptions.length; i++) {
+            const newOption = document.createElement('option');
+            newOption.value = locationOptions[i];
+            var newText = document.createTextNode(locationOptions[i+1]);
+            newOption.appendChild(newText);
+            selectElement.appendChild(newOption);
+            i++;
+        }
+
+        formElement.appendChild(selectElement);
+
+        const submitElement = document.createElement('button');
+        var submitText = document.createTextNode('Submit');
+        submitElement.appendChild(submitText);
+
+        buttonElement.addEventListener('click',() => {
+            openResourceGroupForm(formContainer, true);
+        })
+
+        buttonElement.appendChild(buttonText);
+        tableElement.appendChild(buttonElement);
+
+        submitElement.addEventListener('click', reloadResourceGroupPage, false);
+        formElement.appendChild(submitElement);
+
+        tableElement.appendChild(formContainer);
+    }
+
+    function reloadResourceGroupPage(event) {
+        event.preventDefault();
+        var RGName = document.getElementsByName('RGname')[0].value;
+        var RGlocation = document.getElementsByName('location')[0].value;
+        window.location.hash = '#resource-groups-create$'.concat(RGName, '$', RGlocation);
+        location.reload();
+    }
+
+    addResourceGroupToHTML();
+}
+
+function openResourceGroupForm(form, open) {
+    if(open) {
+        form.hidden = false;
+    } else {
+        form.hidden = true;
+    }
+}
+
+function createResourceGroup(RGName, RGlocation) {
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+
+    const subscriptionID = sessionStorage.getItem('subID');
+    let createRGURL = 'https://management.azure.com'.concat(subscriptionID, '/resourcegroups/', RGName, '?api-version=2021-04-01');
+    console.log(createRGURL);
+
+    let token = sessionStorage.getItem('MyToken');
+
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+    header.append('Content-type', 'application/json');
+
+    let bodyJSON = '{location: "'.concat(RGlocation, '"}');
+    console.log(bodyJSON);
+    
+    let createRGRequest = new Request(createRGURL, {
+        method: 'PUT',
+        mode: 'cors',
+        headers: header,
+        body: bodyJSON
+    });
+
+    console.log(createRGRequest);
+    console.log(header);
+
+    async function createRG() {
+        let created = false;
+        fetch(createRGRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            created = true;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(created);
+                }, 2000);
+        })
+    }
+
+    async function goBack() {
+        const changeStatus = await createRG();
+
+        console.log(changeStatus);
+        if (changeStatus) {
+            window.location.hash = '#resource-groups-home';
+            location.reload();
+        }
+    }
+
+    goBack();
+}
+
+let sendServerRequest = (ev) => { 
+    const subscriptionID = sessionStorage.getItem('subID');
+    let ServerInfo;
+
+    let ServerURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Sql/servers?api-version=2021-11-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let ServerRequest = new Request(ServerURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
+
+    //Create function that actually sends the request
+    async function fetchServer() {
+        fetch(ServerRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            ServerInfo = data;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(ServerInfo);
+                }, 2000);
+        })
+    }
+
+    async function addServerToHTML() {
+        const ServerInfo = await fetchServer();
+
+        //Create title and add to page
+        const pageTitle = document.createElement('h1');
+        pageTitle.setAttribute('class', 'content-title');
+        const titleText = document.createTextNode("Servers");
+        pageTitle.appendChild(titleText);
+        const titleElement = document.getElementById('title-wrapper');
+        titleElement.appendChild(pageTitle);
+
+        //Create header and add to page
+        const newEntry = document.createElement('tr');
+        newEntry.setAttribute('class', 'content-entry');
+
+        //Create element for name header
+        const nameElement = document.createElement('div');
+        nameElement.setAttribute('class', 'content-name');
+        const nameText = document.createTextNode('Name');
+        nameElement.appendChild(nameText);
+        newEntry.appendChild(nameElement);
+
+        //Create element for status header
+        const stateElement = document.createElement('div');
+        stateElement.setAttribute('class', 'content-state');
+        const stateText = document.createTextNode('State');
+        stateElement.appendChild(stateText);
+        newEntry.appendChild(stateElement);
+
+        const tableElement = document.getElementById('content-list');
+        tableElement.appendChild(newEntry);
+
+        //Add each DB info to page
+        for(let i = 0; i < ServerInfo.value.length; i++) {
+
+            //Create table entry
+            const newEntry = document.createElement('tr');
+            newEntry.setAttribute('class', 'content-entry');
+
+            //Create element for Server name
+            const nameElement = document.createElement('div');
+            nameElement.setAttribute('class', 'content-name');
+            const nameText = document.createTextNode(ServerInfo.value[i].name);
+            nameElement.appendChild(nameText);
+            newEntry.appendChild(nameElement);
+
+            //Create resource group button
+
+            const buttonElement = document.createElement('button');
+            buttonElement.setAttribute('class', 'content-button');
+            var buttonText;
+
+            buttonText = document.createTextNode('Resource Groups');
+            buttonElement.addEventListener('click',() => {
+                window.location.hash = '#DB-resource-groups$'.concat(ServerInfo.value[i].name, '$', ServerInfo.value[i].id.split('/')[4]); //ask how to fix this
+                location.reload();
+            })
+
+            buttonElement.appendChild(buttonText);
+            newEntry.appendChild(buttonElement);
+
+            /*
+
+            //Create element for VM status
+            const stateElement = document.createElement('div');
+            stateElement.setAttribute('class', 'content-state');
+            const stateText = document.createTextNode(DBInfo.value[i].properties.instanceView.statuses[1].displayStatus);
+            stateElement.appendChild(stateText);
+            newEntry.appendChild(stateElement);
+
+            //Create start/stop button
+            const buttonElement = document.createElement('button');
+            buttonElement.setAttribute('class', 'content-button');
+            var buttonText;
+
+            if(DBInfo.value[i].properties.instanceView.statuses[1].displayStatus == 'DB running') {
+                buttonText = document.createTextNode('Stop DB');
+                buttonElement.addEventListener('click',() => {
+                    window.location.hash = '#VM-stop$'.concat(DBInfo.value[i].name, '$', DBInfo.value[i].id.split('/')[4]); //Do I need to change the '#VM-stop$'? if so to what?
+                    location.reload();
+                })
+            } else {
+                buttonText = document.createTextNode('Start DB');
+                buttonElement.addEventListener('click',() => {
+                    window.location.hash = '#VM-start$'.concat(DBInfo.value[i].name, '$', DBInfo.value[i].id.split('/')[4]); //Do I need to change the '#VM-start$'? if so to what?
+                    location.reload();
+                })
+            }
+
+            */
+            //buttonElement.appendChild(buttonText);
+            //newEntry.appendChild(buttonElement);
+
+            const tableElement = document.getElementById('content-list');
+            tableElement.appendChild(newEntry);
         }
     }
     
-    addResourceGroupToHTML();
+    addServerToHTML();
+}
+
+//Resource Group call for Database
+let sendDBResourceGroupRequest = (ev) => {
+    const subscriptionID = sessionStorage.getItem('subID');
+    let DBResourceGroupInfo;
+
+    let DBResourceGroupURL = 'https://management.azure.com'.concat(subscriptionID, '/resourcegroups?api-version=2021-04-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let DBResourceGroupRequest = new Request(DBResourceGroupURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
+
+    //Create function that actually sends the request
+    async function fetchDBResourceGroup() {
+        fetch(DBResourceGroupRequest)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            DBResourceGroupInfo = data;
+        })
+        .catch(error => {
+            console.log("Error message:")
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(DBResourceGroupInfo);
+                }, 2000);
+        })
+    }
+
+    async function addDBResourceGroupToHTML() {
+        const DBresourceGroupInfo = await fetchDBResourceGroup();
+
+        //Create title and add to page
+        const pageTitle = document.createElement('h1');
+        pageTitle.setAttribute('class', 'content-title');
+        const titleText = document.createTextNode("Resource Groups for Databases");
+        pageTitle.appendChild(titleText);
+        const titleElement = document.getElementById('title-wrapper');
+        titleElement.appendChild(pageTitle);
+
+        //Create header and add to page
+        const newEntry = document.createElement('tr');
+        newEntry.setAttribute('class', 'content-entry');
+
+        //Create element for name header
+        const nameElement = document.createElement('div');
+        nameElement.setAttribute('class', 'content-name');
+        const nameText = document.createTextNode('Name');
+        nameElement.appendChild(nameText);
+        newEntry.appendChild(nameElement);
+
+        const tableElement = document.getElementById('content-list');
+        tableElement.appendChild(newEntry);
+
+        //Add each Resource Group info to page
+        if(DBresourceGroupInfo.value.length > 0) {
+            for(let i = 0; i < DBresourceGroupInfo.value.length; i++) {
+
+                //Create table entry
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
+
+                //Create element for resource group name
+                const nameElement = document.createElement('div');
+                nameElement.setAttribute('class', 'content-name');
+                const entryText = document.createTextNode(DBresourceGroupInfo.value[i].name);
+                nameElement.appendChild(entryText);
+                newEntry.appendChild(nameElement);
+
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+            }
+        } else {
+            const nameElement = document.createElement('div');
+            nameElement.setAttribute('class', 'content-name');
+            const entryText = document.createTextNode("No Resource Groups");
+            nameElement.appendChild(entryText);
+            newEntry.appendChild(nameElement);
+        }
+    }
+    
+    addDBResourceGroupToHTML();
 }
