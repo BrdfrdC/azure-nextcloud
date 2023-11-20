@@ -22,44 +22,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendVMRequest();
                 break;
             case '#VM-start':
-                console.log(URLhash.split('$')[2]);
                 changeVMStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], false);
                 break;
             case '#VM-stop':
-                console.log(URLhash.split('$')[2]);
                 changeVMStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
                 break;
             case '#VM-restart':
-                console.log(URLhash.split('$')[2]);
                 restartVMRequest(URLhash.split('$')[1], URLhash.split('$')[2]);
                 break;
             case '#app-services-home':
                 sendAppServicesRequest();
                 break;
             case '#app-start':
-                console.log(URLhash.split('$')[2]);
                 changeAppStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], false);
                 break;
             case '#app-stop':
-                console.log(URLhash.split('$')[2]);
                 changeAppStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], true);
                 break;
             case '#app-restart':
-                console.log(URLhash.split('$')[2]);
                 restartAppRequest(URLhash.split('$')[1], URLhash.split('$')[2]);
                 break;
             case '#resource-groups-home':
                 sendResourceGroupRequest();
                 break;
             case '#resource-groups-create':
-                console.log(URLhash.split('$')[2]);
                 createResourceGroup(URLhash.split('$')[1], URLhash.split('$')[2]);
                 break;
             case '#DB-servers':
                 sendServerRequest();
                 break;
-            case '#DB-resource-groups':
-                sendDBResourceGroupRequest();
+            case '#DB-home':
+                sendDBRequest(URLhash.split('$')[1], URLhash.split('$')[2]); 
+                break;
+            case '#DB-stop':
+                changeDBStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], URLhash.split('$')[3], true); //change function input to include server. how to do that?
+                break;
+            case 'DB-start':
+                changeDBStatusRequest(URLhash.split('$')[1], URLhash.split('$')[2], URLhash.split('$')[3], false); //change function input to include server. how to do that?
+                break;
+                //AS
+            case '#SA-home':
+                sendStorageAccountRequest();
+                break;
+            case '#SA-delete':
+                deleteStorageAccountRequest(URLhash.split('$')[1], URLhash.split('$')[2]);
                 break;
             default:
                 break;
@@ -110,7 +116,6 @@ let sendSubRequest = (ev) => {
     let token = sessionStorage.getItem('MyToken');
     let header = new Headers({'Authorization': `Bearer ${token}`});
     //header.append('Authorization', `Bearer ${token}`);
-    console.log(header);
 
     //Creating the request
     let request = new Request(subscriptionURL, {
@@ -119,15 +124,12 @@ let sendSubRequest = (ev) => {
         headers: header
     });
 
-    console.log(request);
-
     //Create function that actually sends the request
     async function fetchSubscriptionID() {
         let subID;
         fetch(request)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 subID = data;
                 sessionStorage.setItem('subID', data.value[0].id);
             })
@@ -190,6 +192,7 @@ function createButtons() {
     var VMButton;
     var appServicesButton;
     var resourceGroupButton;
+    var storageAccountButton;
     var baseDiv;
 
 
@@ -256,6 +259,20 @@ function createButtons() {
             location.reload();
         });
 
+        //Create Storage Account Button
+        storageAccountButton = document.createElement('a');
+        storageAccountButton.setAttribute('class', 'app-navigation-entry-link');
+
+        //Add Storage Account button to the div
+        entryText = document.createTextNode('Storage Accounts');
+        storageAccountButton.appendChild(entryText);
+        baseDiv.appendChild(storageAccountButton);
+
+        storageAccountButton.addEventListener('click', () => {
+            window.location.hash = '#SA-home';
+            location.reload();
+        });
+
         //Events for when the user clicks the appropriate button
         //Adds the hash to the URL to let the site know what page to load
         //and then reloads the page
@@ -302,11 +319,9 @@ let sendVMRequest = (ev) => {
         fetch(vmRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             VMInfo = data;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -456,7 +471,6 @@ function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
     loaderMain.appendChild(loaderChild4);
     titleElement.appendChild(loaderMain);
 
-    console.log(vmRunning);
     const subscriptionID = sessionStorage.getItem('subID');
     let changeStatusURL;
     let token = sessionStorage.getItem('MyToken');
@@ -488,11 +502,9 @@ function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
         let statusChanged;
         fetch(changeStatusRequest)
         .then(data => {
-            console.log(data)
             statusChanged = true;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -506,7 +518,6 @@ function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
     async function goBack() {
         const changeStatus = await fetchChangeStatus();
 
-        console.log(changeStatus);
         if (changeStatus) {
             window.location.hash = '#VM-home';
             location.reload();
@@ -526,7 +537,7 @@ function restartVMRequest(vmName, resourceGroup) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
@@ -561,11 +572,9 @@ function restartVMRequest(vmName, resourceGroup) {
         let restart;
         fetch(restartRequest)
         .then(data => {
-            console.log(data)
             restart = true;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -578,7 +587,6 @@ function restartVMRequest(vmName, resourceGroup) {
 
     async function goBack() {
         const restart = await fetchRestart();
-        console.log(restart);
         if (restart) {
             window.location.hash = '#VM-home';
             location.reload();
@@ -607,11 +615,9 @@ let sendAppServicesRequest = (ev) => {
         fetch(appServicesRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             appServicesInfo = data;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -755,7 +761,6 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
     loaderMain.appendChild(loaderChild4);
     titleElement.appendChild(loaderMain);
     
-    console.log(appRunning);
     const subscriptionID = sessionStorage.getItem('subID');
     let changeStatusURL;
     let token = sessionStorage.getItem('MyToken');
@@ -787,11 +792,9 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
         let statusChanged;
         fetch(changeStatusRequest)
         .then(data => {
-            console.log(data)
             statusChanged = true;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -804,7 +807,6 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
 
     async function goBack() {
         const changeStatus = await fetchChangeStatus();
-        console.log(changeStatus);
         if (changeStatus) {
             window.location.hash = '#app-services-home';
             location.reload();
@@ -859,11 +861,9 @@ function restartAppRequest(appName, resourceGroup) {
         let restart;
         fetch(restartRequest)
         .then(data => {
-            console.log(data)
             restart = true;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -876,7 +876,6 @@ function restartAppRequest(appName, resourceGroup) {
 
     async function goBack() {
         const restart = await fetchRestart();
-        console.log(restart);
         if (restart) {
             window.location.hash = '#app-services-home';
             location.reload();
@@ -906,11 +905,9 @@ let sendResourceGroupRequest = (ev) => {
         fetch(ResourceGroupRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             ResourceGroupInfo = data;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -978,6 +975,7 @@ let sendResourceGroupRequest = (ev) => {
         //Create "Create New Resource Group" button
         const buttonElement = document.createElement('button');
         buttonElement.setAttribute('class', 'create-button');
+        buttonElement.style.marginBottom = "30px";
         var buttonText = document.createTextNode('Create New Resource Group');
 
         //Create "Create New Resource Group" form
@@ -1116,7 +1114,6 @@ function createResourceGroup(RGName, RGlocation) {
 
     const subscriptionID = sessionStorage.getItem('subID');
     let createRGURL = 'https://management.azure.com'.concat(subscriptionID, '/resourcegroups/', RGName, '?api-version=2021-04-01');
-    console.log(createRGURL);
 
     let token = sessionStorage.getItem('MyToken');
 
@@ -1125,7 +1122,6 @@ function createResourceGroup(RGName, RGlocation) {
     header.append('Content-type', 'application/json');
 
     let bodyJSON = '{location: "'.concat(RGlocation, '"}');
-    console.log(bodyJSON);
     
     let createRGRequest = new Request(createRGURL, {
         method: 'PUT',
@@ -1134,19 +1130,14 @@ function createResourceGroup(RGName, RGlocation) {
         body: bodyJSON
     });
 
-    console.log(createRGRequest);
-    console.log(header);
-
     async function createRG() {
         let created = false;
         fetch(createRGRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             created = true;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -1160,7 +1151,6 @@ function createResourceGroup(RGName, RGlocation) {
     async function goBack() {
         const changeStatus = await createRG();
 
-        console.log(changeStatus);
         if (changeStatus) {
             window.location.hash = '#resource-groups-home';
             location.reload();
@@ -1190,11 +1180,9 @@ let sendServerRequest = (ev) => {
         fetch(ServerRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             ServerInfo = data;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
@@ -1227,17 +1215,10 @@ let sendServerRequest = (ev) => {
         nameElement.appendChild(nameText);
         newEntry.appendChild(nameElement);
 
-        //Create element for status header
-        const stateElement = document.createElement('div');
-        stateElement.setAttribute('class', 'content-state');
-        const stateText = document.createTextNode('State');
-        stateElement.appendChild(stateText);
-        newEntry.appendChild(stateElement);
-
         const tableElement = document.getElementById('content-list');
         tableElement.appendChild(newEntry);
 
-        //Add each DB info to page
+        //Add each server info to page
         for(let i = 0; i < ServerInfo.value.length; i++) {
 
             //Create table entry
@@ -1251,52 +1232,21 @@ let sendServerRequest = (ev) => {
             nameElement.appendChild(nameText);
             newEntry.appendChild(nameElement);
 
-            //Create resource group button
+            //Create database button (change to databases)
 
             const buttonElement = document.createElement('button');
             buttonElement.setAttribute('class', 'content-button');
             var buttonText;
 
-            buttonText = document.createTextNode('Resource Groups');
+            buttonText = document.createTextNode('Databases');
             buttonElement.addEventListener('click',() => {
-                window.location.hash = '#DB-resource-groups$'.concat(ServerInfo.value[i].name, '$', ServerInfo.value[i].id.split('/')[4]); //ask how to fix this
+                window.location.hash = '#DB-home$'.concat(ServerInfo.value[i].name, '$', ServerInfo.value[i].id.split('/')[4]);
                 location.reload();
             })
 
+            
             buttonElement.appendChild(buttonText);
             newEntry.appendChild(buttonElement);
-
-            /*
-
-            //Create element for VM status
-            const stateElement = document.createElement('div');
-            stateElement.setAttribute('class', 'content-state');
-            const stateText = document.createTextNode(DBInfo.value[i].properties.instanceView.statuses[1].displayStatus);
-            stateElement.appendChild(stateText);
-            newEntry.appendChild(stateElement);
-
-            //Create start/stop button
-            const buttonElement = document.createElement('button');
-            buttonElement.setAttribute('class', 'content-button');
-            var buttonText;
-
-            if(DBInfo.value[i].properties.instanceView.statuses[1].displayStatus == 'DB running') {
-                buttonText = document.createTextNode('Stop DB');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#VM-stop$'.concat(DBInfo.value[i].name, '$', DBInfo.value[i].id.split('/')[4]); //Do I need to change the '#VM-stop$'? if so to what?
-                    location.reload();
-                })
-            } else {
-                buttonText = document.createTextNode('Start DB');
-                buttonElement.addEventListener('click',() => {
-                    window.location.hash = '#VM-start$'.concat(DBInfo.value[i].name, '$', DBInfo.value[i].id.split('/')[4]); //Do I need to change the '#VM-start$'? if so to what?
-                    location.reload();
-                })
-            }
-
-            */
-            //buttonElement.appendChild(buttonText);
-            //newEntry.appendChild(buttonElement);
 
             const tableElement = document.getElementById('content-list');
             tableElement.appendChild(newEntry);
@@ -1306,49 +1256,47 @@ let sendServerRequest = (ev) => {
     addServerToHTML();
 }
 
-//Resource Group call for Database
-let sendDBResourceGroupRequest = (ev) => {
+//Call for Database
+function sendDBRequest(serverName, resourceGroup) {
     const subscriptionID = sessionStorage.getItem('subID');
-    let DBResourceGroupInfo;
+    let DBInfo;
 
-    let DBResourceGroupURL = 'https://management.azure.com'.concat(subscriptionID, '/resourcegroups?api-version=2021-04-01');
+    let DBURL = 'https://management.azure.com'.concat(subscriptionID, '/resourceGroups/', resourceGroup, '/providers/Microsoft.Sql/servers/', serverName, '/databases?api-version=2021-11-01');
     let token = sessionStorage.getItem('MyToken');
     let header = new Headers();
     header.append('Authorization', `Bearer ${token}`);
 
-    let DBResourceGroupRequest = new Request(DBResourceGroupURL, {
+    let DBRequest = new Request(DBURL, {
         method: 'GET',
         mode: 'cors',
         headers: header
     });
 
     //Create function that actually sends the request
-    async function fetchDBResourceGroup() {
-        fetch(DBResourceGroupRequest)
+    async function fetchDB() {
+        fetch(DBRequest)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
-            DBResourceGroupInfo = data;
+            DBInfo = data;
         })
         .catch(error => {
-            console.log("Error message:")
             console.error(error.message);
         });
 
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(DBResourceGroupInfo);
+                resolve(DBInfo);
                 }, 2000);
         })
     }
 
-    async function addDBResourceGroupToHTML() {
-        const DBresourceGroupInfo = await fetchDBResourceGroup();
+    async function addDBToHTML() {
+        const DBInfo = await fetchDB();
 
         //Create title and add to page
         const pageTitle = document.createElement('h1');
         pageTitle.setAttribute('class', 'content-title');
-        const titleText = document.createTextNode("Resource Groups for Databases");
+        const titleText = document.createTextNode("Databases");
         pageTitle.appendChild(titleText);
         const titleElement = document.getElementById('title-wrapper');
         titleElement.appendChild(pageTitle);
@@ -1367,20 +1315,27 @@ let sendDBResourceGroupRequest = (ev) => {
         const tableElement = document.getElementById('content-list');
         tableElement.appendChild(newEntry);
 
-        //Add each Resource Group info to page
-        if(DBresourceGroupInfo.value.length > 0) {
-            for(let i = 0; i < DBresourceGroupInfo.value.length; i++) {
+        //Add each Database info to page
+        if(DBInfo.value.length > 0) {
+            for(let i = 0; i < DBInfo.value.length; i++) {
 
                 //Create table entry
                 const newEntry = document.createElement('tr');
                 newEntry.setAttribute('class', 'content-entry');
 
-                //Create element for resource group name
+                //Create element for database name
                 const nameElement = document.createElement('div');
                 nameElement.setAttribute('class', 'content-name');
-                const entryText = document.createTextNode(DBresourceGroupInfo.value[i].name);
+                const entryText = document.createTextNode(DBInfo.value[i].name);
                 nameElement.appendChild(entryText);
                 newEntry.appendChild(nameElement);
+
+                //Create element for DB status
+                const stateElement = document.createElement('div');
+                stateElement.setAttribute('class', 'content-state');
+                const stateText = document.createTextNode(DBInfo.value[i].properties.status);
+                stateElement.appendChild(stateText);
+                newEntry.appendChild(stateElement);
 
                 const tableElement = document.getElementById('content-list');
                 tableElement.appendChild(newEntry);
@@ -1388,11 +1343,225 @@ let sendDBResourceGroupRequest = (ev) => {
         } else {
             const nameElement = document.createElement('div');
             nameElement.setAttribute('class', 'content-name');
-            const entryText = document.createTextNode("No Resource Groups");
+            const entryText = document.createTextNode("No Databases");
             nameElement.appendChild(entryText);
             newEntry.appendChild(nameElement);
         }
     }
     
-    addDBResourceGroupToHTML();
+    addDBToHTML();
+}
+
+function changeDBStatusRequest(dbName, resourceGroup, server, dbRunning) {
+    const subscriptionID = sessionStorage.getItem('subID');
+    let changeStatusURL;
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+    let changeStatusRequest
+
+    if(dbRunning) {
+        changeStatusURL = 'https://management.azure.com'.concat(subscriptionID, 
+            '/resourceGroups/', resourceGroup, '/providers/Microsoft.Sql/servers/', server, '/databases/', dbName, 
+            '/pause?api-version=2021-11-01');
+        changeStatusRequest = new Request(changeStatusURL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: header
+        });
+    } else {
+        changeStatusURL = 'https://management.azure.com'.concat(subscriptionID, 
+            '/resourceGroups/', resourceGroup, '/providers/Microsoft.Sql/servers/', server, '/databases/', dbName, 
+            '/resume?api-version=2021-11-01');
+        changeStatusRequest = new Request(changeStatusURL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: header
+        });
+    }
+
+
+    async function fetchChangeStatus() {
+        let statusChanged;
+        fetch(changeStatusRequest)
+        .then(data => {
+            statusChanged = true;
+        })
+        .catch(error => {
+            console.error(error.message);
+        });
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(statusChanged);
+                }, 6000);
+        })
+    }
+
+    async function goBack() {
+        const changeStatus = await fetchChangeStatus();
+        if (changeStatus) {
+            window.location.hash = '#DB-home';
+            location.reload();
+        }
+    }
+
+    goBack();
+}
+
+let sendStorageAccountRequest = () => {
+    const subscriptionID = sessionStorage.getItem('subID');
+    // Getting parameters needed to make the API call for Storage Accounts
+    let storageAccountURL = 'https://management.azure.com'.concat(subscriptionID, '/providers/Microsoft.Storage/storageAccounts?api-version=2023-01-01');
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers({'Authorization': `Bearer ${token}`});
+
+    // Creating the request for Storage Accounts
+    let request = new Request(storageAccountURL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: header
+    });
+
+    // Create function that actually sends the request for Storage Accounts
+    async function fetchStorageAccounts() {
+        let storageAccounts;
+        try {
+            let response = await fetch(request);
+            let data = await response.json();
+            storageAccounts = data;
+        } catch (error) {
+            console.error(error.message);
+        }
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(storageAccounts);
+            }, 2000);
+        });
+    }
+
+    // Adds Storage Accounts info to HTML
+    async function addStorageAccountToHTML() {
+        const storageAccountInfo = await fetchStorageAccounts();
+
+        // Create title and add to page
+        const pageTitle = document.createElement('h1');
+        pageTitle.setAttribute('class', 'content-title');
+        const titleText = document.createTextNode("Storage Accounts");
+        pageTitle.appendChild(titleText);
+        const titleElement = document.getElementById('title-wrapper');
+        titleElement.appendChild(pageTitle);
+
+        // Add each Storage Account name to page
+        if (storageAccountInfo.value.length > 0) {
+            for (let i = 0; i < storageAccountInfo.value.length; i++) {
+                const newEntry = document.createElement('tr');
+                newEntry.setAttribute('class', 'content-entry');
+
+                const nameElement = document.createElement('div');
+                nameElement.setAttribute('class', 'content-name');
+                const nameText = document.createTextNode(storageAccountInfo.value[i].name);
+                nameElement.appendChild(nameText);
+                newEntry.appendChild(nameElement);
+
+                const tableElement = document.getElementById('content-list');
+                tableElement.appendChild(newEntry);
+
+                //Create delete element
+                const deleteElement = document.createElement('button');
+                deleteElement.setAttribute('class', 'content-button');
+
+                //Add text
+                const deleteText = document.createTextNode('Delete');
+                deleteElement.appendChild(deleteText);
+
+                //Event Listener
+                deleteElement.addEventListener('click',() => {
+                    window.location.hash = '#SA-delete$'.concat(storageAccountInfo.value[i].name, '$', storageAccountInfo.value[i].id.split('/')[4]);
+                    location.reload();
+                });
+
+                newEntry.appendChild(deleteElement);
+            }
+        } else {
+            const newEntry = document.createElement('tr');
+            newEntry.setAttribute('class', 'content-entry');
+            const entryText = document.createTextNode("No Storage Accounts");
+            newEntry.appendChild(entryText);
+
+            const tableElement = document.getElementById('content-list');
+            tableElement.appendChild(newEntry);
+        }
+    }
+
+    addStorageAccountToHTML();
+}
+
+function deleteStorageAccountRequest(storageAccountName, resourceGroup) {
+
+    const pageTitle = document.createElement('h1');
+    pageTitle.style.justifySelf = "center";
+    pageTitle.setAttribute('class', 'content-title');
+    const titleText = document.createTextNode("Processing Request");
+    pageTitle.appendChild(titleText);
+
+    const titleElement = document.getElementById('title-wrapper');
+    titleElement.style.justifySelf = "center";
+    titleElement.style.alignSelf = "center";
+    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingLeft = "0px";
+    titleElement.appendChild(pageTitle);
+
+    const loaderMain = document.createElement('div');
+    loaderMain.setAttribute('class', 'lds-ellipsis');
+    const loaderChild1 = document.createElement('div');
+    loaderMain.appendChild(loaderChild1);
+    const loaderChild2 = document.createElement('div');
+    loaderMain.appendChild(loaderChild2);
+    const loaderChild3 = document.createElement('div');
+    loaderMain.appendChild(loaderChild3);
+    const loaderChild4 = document.createElement('div');
+    loaderMain.appendChild(loaderChild4);
+    titleElement.appendChild(loaderMain);
+
+    const subscriptionID = sessionStorage.getItem('subID');
+
+    let deleteURL = 'https://management.azure.com'.concat(subscriptionID, 
+    '/resourceGroups/', resourceGroup, '/providers/Microsoft.Storage/storageAccounts/', storageAccountName, 
+    '?api-version=2023-01-01');;
+    let token = sessionStorage.getItem('MyToken');
+    let header = new Headers();
+    header.append('Authorization', `Bearer ${token}`);
+
+    let deleteRequest = new Request(deleteURL, {
+        method: 'DELETE',
+        mode: 'cors',
+        headers: header
+    });
+
+    async function fetchDelete() {
+        let deleteOperation;
+        try {
+            let response = await fetch(deleteRequest);
+            deleteOperation = response.ok;
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(deleteOperation);
+            }, 2000);
+        });
+    }
+
+    async function goBack() {
+        const deleteOperation = await fetchDelete();
+        if (deleteOperation) {
+            window.location.hash = '#SA-home';
+            location.reload();
+        }
+    }
+
+    goBack();
 }

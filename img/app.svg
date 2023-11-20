@@ -1,56 +1,200 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="https://purl.org/dc/elements/1.1/"
-   xmlns:cc="https://creativecommons.org/ns#"
-   xmlns:rdf="https://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="https://www.w3.org/2000/svg"
-   xmlns="https://www.w3.org/2000/svg"
-   xmlns:sodipodi="https://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="https://www.inkscape.org/namespaces/inkscape"
-   height="32"
-   width="32"
-   version="1"
-   viewBox="0 0 32 32"
-   id="svg4"
-   sodipodi:docname="app.svg"
-   inkscape:version="0.92.1 r">
-  <metadata
-     id="metadata10">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="https://purl.org/dc/dcmitype/StillImage" />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <defs
-     id="defs8" />
+<svg:svg
+   width="150"
+   height="150"
+   viewBox="0 0 96 96"
+   version="1.1"
+   id="svg33"
+   sodipodi:docname="azure.svg"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
+     id="namedview35"
      pagecolor="#ffffff"
      bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
+     borderopacity="1.0"
      inkscape:pageshadow="2"
-     inkscape:window-width="789"
-     inkscape:window-height="480"
-     id="namedview6"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="7.375"
-     inkscape:cx="-8.3389831"
-     inkscape:cy="16"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg4" />
-  <path
-     d="M13.733 0a.915.915 0 0 0-.933.934V3.6c-1.182.304-2.243.794-3.267 1.4L7.6 3.068a.93.93 0 0 0-1.334 0l-3.2 3.2a.93.93 0 0 0 0 1.334L5 9.535c-.607 1.024-1.097 2.085-1.4 3.267H.933a.915.915 0 0 0-.933.934v4.533c0 .53.403.934.933.934H3.6c.303 1.182.793 2.243 1.4 3.267l-1.934 1.935a.93.93 0 0 0 0 1.333l3.2 3.2a.93.93 0 0 0 1.333 0L9.532 27c1.024.61 2.085 1.097 3.266 1.4v2.667c0 .53.402.933.932.933h4.534c.53 0 .933-.403.933-.935V28.4c1.18-.305 2.24-.795 3.265-1.4L24.4 28.93a.93.93 0 0 0 1.332 0l3.2-3.2a.93.93 0 0 0 0-1.333L27 22.465c.607-1.024 1.096-2.085 1.4-3.266h2.665a.915.915 0 0 0 .935-.933v-4.534a.915.915 0 0 0-.934-.933H28.4c-.304-1.182-.792-2.243-1.4-3.267L28.932 7.6a.93.93 0 0 0 0-1.334l-3.2-3.2a.93.93 0 0 0-1.333 0L22.465 5c-1.024-.607-2.084-1.097-3.266-1.4V.933A.915.915 0 0 0 18.267 0zM16 8.87A7.134 7.134 0 0 1 23.13 16 7.134 7.134 0 0 1 16 23.133c-3.936 0-7.13-3.196-7.13-7.132S12.063 8.87 16 8.87z"
-     display="block"
-     fill="#fff"
-     id="path2"
-     style="fill:#ffffff" />
-</svg>
+     inkscape:zoom="5.4352941"
+     inkscape:cx="36.33658"
+     inkscape:cy="82.516234"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg33" />
+  <svg:defs
+     id="defs23">
+    <svg:linearGradient
+       id="e399c19f-b68f-429d-b176-18c2117ff73c"
+       x1="-1032.172"
+       x2="-1059.213"
+       y1="145.312"
+       y2="65.426"
+       gradientTransform="matrix(1 0 0 -1 1075 158)"
+       gradientUnits="userSpaceOnUse">
+      <svg:stop
+         offset="0"
+         stop-color="#114a8b"
+         id="stop2" />
+      <svg:stop
+         offset="1"
+         stop-color="#0669bc"
+         id="stop4" />
+    </svg:linearGradient>
+    <svg:linearGradient
+       id="ac2a6fc2-ca48-4327-9a3c-d4dcc3256e15"
+       x1="-1023.725"
+       x2="-1029.98"
+       y1="108.083"
+       y2="105.968"
+       gradientTransform="matrix(1,0,0,-1,932.29397,179.19641)"
+       gradientUnits="userSpaceOnUse">
+      <svg:stop
+         offset="0"
+         stop-opacity=".3"
+         id="stop7" />
+      <svg:stop
+         offset=".071"
+         stop-opacity=".2"
+         id="stop9" />
+      <svg:stop
+         offset=".321"
+         stop-opacity=".1"
+         id="stop11" />
+      <svg:stop
+         offset=".623"
+         stop-opacity=".05"
+         id="stop13" />
+      <svg:stop
+         offset="1"
+         stop-opacity="0"
+         id="stop15" />
+    </svg:linearGradient>
+    <svg:linearGradient
+       id="a7fee970-a784-4bb1-af8d-63d18e5f7db9"
+       x1="-1027.165"
+       x2="-997.482"
+       y1="147.642"
+       y2="68.561"
+       gradientTransform="matrix(1 0 0 -1 1075 158)"
+       gradientUnits="userSpaceOnUse">
+      <svg:stop
+         offset="0"
+         stop-color="#3ccbf4"
+         id="stop18" />
+      <svg:stop
+         offset="1"
+         stop-color="#2892df"
+         id="stop20" />
+    </svg:linearGradient>
+  </svg:defs>
+  <svg:path
+     id="path25"
+     style="fill:#ffffff;fill-opacity:1;stroke-width:1.5625"
+     d="M 52.080078 12.724609 C 50.364655 12.729789 48.861079 13.809146 48.3125 15.435547 L 8.9667969 132.02344 C 8.0734063 134.67157 9.9376561 137.27376 12.732422 137.27344 L 44.394531 137.27344 C 46.114389 137.27307 47.621786 136.19006 48.171875 134.56055 L 55.496094 112.86328 L 42.953125 101.15625 C 42.735683 100.9536 42.538713 100.73658 42.363281 100.50977 C 42.187849 100.28295 42.034671 100.04619 41.900391 99.800781 C 41.766111 99.55537 41.65258 99.301399 41.558594 99.042969 C 41.464608 98.784538 41.390487 98.521734 41.335938 98.255859 C 41.281387 97.989985 41.246442 97.720868 41.230469 97.453125 C 41.214496 97.185382 41.216535 96.918333 41.238281 96.654297 C 41.260027 96.390261 41.300768 96.129754 41.359375 95.875 C 41.417982 95.620246 41.495233 95.370756 41.589844 95.130859 C 41.684412 94.891068 41.796751 94.657854 41.927734 94.431641 C 42.058718 94.205427 42.206868 93.987243 42.371094 93.779297 C 42.535319 93.571351 42.715861 93.37444 42.910156 93.189453 C 43.104452 93.004466 43.313964 92.831167 43.535156 92.673828 C 43.756349 92.51649 43.989457 92.375 44.234375 92.25 C 44.479293 92.125 44.73453 92.015705 45 91.927734 C 45.26547 91.839764 45.541368 91.772814 45.824219 91.726562 C 46.107069 91.680312 46.398254 91.656092 46.695312 91.65625 L 46.697266 91.65625 L 62.652344 91.65625 L 72.363281 62.890625 L 56.34375 15.429688 C 55.794895 13.803717 54.292277 12.724707 52.576172 12.724609 L 52.089844 12.724609 L 52.082031 12.724609 L 52.080078 12.724609 z M 60.5 12.724609 C 60.688141 13.097757 60.943766 13.426266 61.080078 13.830078 L 87.345703 91.65625 L 89.033203 96.658203 L 100.42969 130.42578 C 101.24286 132.83478 100.7625 135.2158 99.697266 137.27344 L 123.57422 137.27344 L 128.86914 137.27344 L 137.26758 137.27344 C 140.06297 137.2726 141.93115 134.672 141.03711 132.02344 L 101.6875 15.429688 C 101.13897 13.803767 99.633923 12.72441 97.917969 12.724609 L 60.5 12.724609 z M 46.691406 96.658203 C 46.523951 96.658018 46.432071 96.682815 46.371094 96.734375 C 46.310117 96.785935 46.280531 96.862669 46.240234 96.964844 C 46.199943 97.067018 46.169721 97.145181 46.179688 97.224609 C 46.189653 97.304038 46.238824 97.38583 46.361328 97.5 L 87.816406 136.19336 C 88.002545 136.36699 88.203456 136.52044 88.416016 136.6543 C 88.628575 136.78815 88.853168 136.9025 89.085938 136.99414 C 89.318706 137.08579 89.559874 137.15612 89.806641 137.20312 C 90.053407 137.25014 90.305995 137.27349 90.560547 137.27344 L 91.925781 137.27344 C 94.72162 137.27328 96.587542 134.67243 95.693359 132.02344 L 83.757812 96.658203 L 46.695312 96.658203 L 46.691406 96.658203 z "
+     transform="scale(0.64)" />
+  <script>{
+            document.currentScript.dataset.injected = true;
+            const o = JSON.parse(decodeURIComponent(escape(atob('eyJ1c2VyQWdlbnQiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBydjoxMTMuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8xMTMuMCIsImFwcFZlcnNpb24iOiI1LjAgKFdpbmRvd3MpIiwicGxhdGZvcm0iOiJXaW5kb3dzIiwidmVuZG9yIjoiIiwicHJvZHVjdCI6IkdlY2tvIiwidXNlckFnZW50RGF0YSI6IltkZWxldGVdIiwib3NjcHUiOiJXaW5kb3dzIDEwIiwicHJvZHVjdFN1YiI6IjIwMTAwMTAxIiwiYnVpbGRJRCI6IjIwMTgxMDAxMDAwMDAwIn0='))));
+
+            if (o.userAgentDataBuilder) {
+              const v = new class NavigatorUAData {
+                #p;
+
+                constructor({p, ua}) {
+                  this.#p = p;
+
+                  const version = p.browser.major;
+                  const name = p.browser.name === 'Chrome' ? 'Google Chrome' : p.browser.name;
+
+                  this.brands = [{
+                    brand: name,
+                    version
+                  }, {
+                    brand: 'Chromium',
+                    version
+                  }, {
+                    brand: 'Not=A?Brand',
+                    version: '24'
+                  }];
+
+                  this.mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+
+                  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA-Platform
+                  this.platform = 'Unknown';
+                  if (p.os &amp;&amp; p.os.name) {
+                    const name = p.os.name.toLowerCase();
+                    if (name.includes('mac')) {
+                      this.platform = 'macOS';
+                    }
+                    else if (name.includes('debian')) {
+                      this.platform = 'Linux';
+                    }
+                    else {
+                      this.platform = p.os.name;
+                    }
+                  }
+                }
+                toJSON() {
+                  return {
+                    brands: this.brands,
+                    mobile: this.mobile,
+                    platform: this.platform
+                  };
+                }
+                getHighEntropyValues(hints) {
+                  if (!hints || Array.isArray(hints) === false) {
+                    return Promise.reject(Error(&quot;Failed to execute 'getHighEntropyValues' on 'NavigatorUAData'&quot;));
+                  }
+
+                  const r = this.toJSON();
+
+                  if (hints.includes('architecture')) {
+                    r.architecture = this.#p?.cpu?.architecture || 'x86';
+                  }
+                  if (hints.includes('bitness')) {
+                    r.bitness = '64';
+                  }
+                  if (hints.includes('model')) {
+                    r.model = '';
+                  }
+                  if (hints.includes('platformVersion')) {
+                    r.platformVersion = this.#p?.os?.version || '10.0.0';
+                  }
+                  if (hints.includes('uaFullVersion')) {
+                    r.uaFullVersion = this.brands[0].version;
+                  }
+                  if (hints.includes('fullVersionList')) {
+                    r.fullVersionList = this.brands;
+                  }
+                  return Promise.resolve(r);
+                }
+              }(o.userAgentDataBuilder);
+
+              navigator.__defineGetter__('userAgentData', () =&gt; {
+                return v;
+              });
+            }
+            delete o.userAgentDataBuilder;
+
+            for (const key of Object.keys(o)) {
+              if (o[key] === '[delete]') {
+                delete Object.getPrototypeOf(window.navigator)[key];
+              }
+              else {
+                navigator.__defineGetter__(key, () =&gt; {
+                  if (o[key] === 'empty') {
+                    return '';
+                  }
+                  return o[key];
+                });
+              }
+            }
+          }</script>
+</svg:svg>
