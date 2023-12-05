@@ -455,7 +455,7 @@ function changeVMStatusRequest(vmName, resourceGroup, vmRunning) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
@@ -745,7 +745,7 @@ function changeAppStatusRequest(appName, resourceGroup, appRunning) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
@@ -826,7 +826,7 @@ function restartAppRequest(appName, resourceGroup) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
@@ -1096,7 +1096,7 @@ function createResourceGroup(RGName, RGlocation) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
@@ -1508,7 +1508,7 @@ function deleteStorageAccountRequest(storageAccountName, resourceGroup) {
     const titleElement = document.getElementById('title-wrapper');
     titleElement.style.justifySelf = "center";
     titleElement.style.alignSelf = "center";
-    titleElement.style.paddingTop = "500px";
+    titleElement.style.paddingTop = "200px";
     titleElement.style.paddingLeft = "0px";
     titleElement.appendChild(pageTitle);
 
