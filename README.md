@@ -3,7 +3,12 @@ SPDX-FileCopyrightText: Bradley Consuegra <admin@nextcloud.com>
 SPDX-License-Identifier: CC0-1.0
 -->
 
-# Azure
+# NextAzure
+NextAzure allows the user to sign into their Microsoft account from NextCloud and access certain features from the Azure portal. This app was created for the Senior Design Capstone course at Florida International University.
+## Demo Video
+[![Video](https://img.youtube.com/vi/ovX7HFqsMv4/maxresdefault.jpg)](https://www.youtube.com/watch?v=ovX7HFqsMv4)
+
+## NextCloud Default README
 Place this app in **nextcloud/apps/**
 
 ## Building the app
